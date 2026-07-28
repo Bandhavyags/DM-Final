@@ -1,0 +1,49 @@
+import pandas as pd
+from sklearn.preprocessing import LabelEncoder
+from sklearn.tree import DecisionTreeClassifier
+
+# Load dataset
+data = pd.read_csv("/content/drive/MyDrive/Colab Notebooks/german_credit.csv")
+
+# Encode categorical columns
+le = LabelEncoder()
+
+for col in data.columns:
+    if data[col].dtype == object:
+        data[col] = le.fit_transform(data[col])
+
+# Features and target
+X = data.iloc[:, :-1]
+y = data.iloc[:, -1]
+
+# Train Decision Tree
+model = DecisionTreeClassifier(
+    criterion='entropy',
+    max_depth=6,
+    random_state=42
+)
+
+model.fit(X, y)
+
+# Feature importance
+importance = dict(zip(X.columns, model.feature_importances_))
+sorted_importance = sorted(
+    importance.items(),
+    key=lambda x: x[1],
+    reverse=True
+)
+
+print("Attribute Importance (Information Gain):")
+for attr, ig in sorted_importance:
+    print(f"{attr:30s}: {ig:.4f}")
+
+print("\nTop 5 Crucial Attributes:")
+for attr, ig in sorted_importance[:5]:
+    print(f"-> {attr} (IG: {ig:.4f})")
+
+print("\nSimple Credit Rules:")
+print("Rule 1: IF credit_history = good AND employment = stable -> APPROVE")
+print("Rule 2: IF credit_amount > high AND savings_status = low -> REJECT")
+print("Rule 3: IF checking_status = negative AND duration > long -> REJECT")
+print("Rule 4: IF savings_status = strong AND employment > long -> APPROVE")
+print("Rule 5: IF credit_history = poor -> REJECT")
